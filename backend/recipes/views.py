@@ -22,9 +22,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         is_in_shopping_cart = self.request.query_params.get('is_in_shopping_cart')
         author_id = self.request.query_params.get('author')
         if is_favorited == '1' and self.request.user.is_authenticated:
-            queryset = queryset.filter(favorites__user=self.request.user)
+            queryset = queryset.filter(favorite__user=self.request.user)  # Исправлено: favorites -> favorite
         if is_in_shopping_cart == '1' and self.request.user.is_authenticated:
-            queryset = queryset.filter(shopping_cart__user=self.request.user)  # Исправлено
+            queryset = queryset.filter(shopping_cart__user=self.request.user)
         if author_id:
             queryset = queryset.filter(author_id=author_id)
         return queryset
@@ -67,11 +67,29 @@ class RecipeViewSet(viewsets.ModelViewSet):
         link = request.build_absolute_uri(f'/recipes/{recipe.id}/')
         return Response({'short-link': link})  # Изменено на short-link
 
+    # @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    # def download_shopping_cart(self, request):
+    #     user = request.user
+    #     ingredients = RecipeIngredient.objects.filter(
+    #         recipe__shoppingcart_set__user=user
+    #     ).values(
+    #         'ingredient__name', 'ingredient__measurement_unit'
+    #     ).annotate(total_amount=Sum('amount'))
+    #     content = 'Список покупок:\n\n'
+    #     for ingredient in ingredients:
+    #         content += (
+    #             f"{ingredient['ingredient__name']} "
+    #             f"({ingredient['ingredient__measurement_unit']}) — "
+    #             f"{ingredient['total_amount']}\n"
+    #         )
+    #     response = HttpResponse(content, content_type='text/plain')
+    #     response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+    #     return response
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
         user = request.user
         ingredients = RecipeIngredient.objects.filter(
-            recipe__shoppingcart_set__user=user
+            recipe__shopping_cart__user=user  # Исправлено: shoppingcart_set -> shopping_cart
         ).values(
             'ingredient__name', 'ingredient__measurement_unit'
         ).annotate(total_amount=Sum('amount'))

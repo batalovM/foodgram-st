@@ -1,13 +1,13 @@
 from rest_framework import serializers
 from users.models import User, Subscription
-from recipes.serializers import RecipeShortSerializer  # Исправим импорт
+from recipes.serializers import RecipeShortSerializer 
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    avatar = serializers.SerializerMethodField()  # Добавим поле avatar
+    avatar = serializers.SerializerMethodField()  
 
     class Meta:
         model = User
@@ -24,9 +24,8 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        recipes = obj.recipes.all()  # Получаем все рецепты пользователя
+        recipes = obj.recipes.all()  
         
-        # Применяем лимит, если он указан
         recipes_limit = request.query_params.get('recipes_limit')
         if recipes_limit:
             try:
@@ -40,7 +39,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return obj.recipes.count()
     
     def get_avatar(self, obj):
-        # Если у пользователя есть аватар, возвращаем URL
         if obj.avatar and hasattr(obj.avatar, 'url'):
             request = self.context.get('request')
             if request:

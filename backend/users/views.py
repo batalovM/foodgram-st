@@ -24,7 +24,6 @@ class UserViewSet(viewsets.ModelViewSet):
             if not created:
                 return Response({'error': 'Вы уже подписаны'}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Исправляем эту строку - передаем автора, а не подписку
             serializer = SubscriptionSerializer(author, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':

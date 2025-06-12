@@ -13,18 +13,15 @@ def subscriptions_list(request):
     subscriptions = Subscription.objects.filter(user=user)
     users = User.objects.filter(id__in=subscriptions.values('subscriber'))
     
-    # Получаем значение параметра limit
     limit = request.query_params.get('limit')
     
-    # Если указан limit, применяем его непосредственно (для гарантии)
     if limit:
         try:
             limit_value = int(limit)
-            users = users[:limit_value]  # Ограничиваем количество пользователей
+            users = users[:limit_value]  
         except ValueError:
             pass
     
-    # Используем кастомную пагинацию из настроек
     paginator = CustomPagination()
     page = paginator.paginate_queryset(users, request)
     

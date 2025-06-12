@@ -11,7 +11,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     filter_backends = [SearchFilter]
     search_fields = ['^name']
-    pagination_class = None  # Disable pagination for this viewset
+    pagination_class = None 
     
     def get_queryset(self):
             queryset = super().get_queryset()

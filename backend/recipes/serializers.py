@@ -33,7 +33,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
-    ingredients = IngredientInRecipeWriteSerializer(many=True, write_only=True)  # Только для записи
+    ingredients = IngredientInRecipeWriteSerializer(many=True, write_only=True)  
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField()
@@ -49,20 +49,18 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients = data.get('ingredients')
         cooking_time = data.get('cooking_time')
 
-        # Проверка на пустой список ингредиентов
         if not ingredients:
             raise serializers.ValidationError({
                 'ingredients': 'Поле ingredients не может быть пустым.'
             })
 
-        # Проверка на дублирующиеся id ингредиентов
+
         ingredient_ids = [ingredient['id'] for ingredient in ingredients]
         if len(ingredient_ids) != len(set(ingredient_ids)):
             raise serializers.ValidationError({
                 'ingredients': 'Ингредиенты не должны повторяться.'
             })
 
-        # Проверка, что cooking_time >= 1
         if cooking_time is not None and cooking_time < 1:
             raise serializers.ValidationError({
                 'cooking_time': 'Время приготовления должно быть не менее 1 минуты.'

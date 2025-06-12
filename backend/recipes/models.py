@@ -50,6 +50,7 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        related_name='recipe_ingredients',
         verbose_name='Рецепт'
     )
     ingredient = models.ForeignKey(
@@ -110,7 +111,8 @@ class ShoppingCart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
+        related_name='shopping_cart'
     )
 
     class Meta:

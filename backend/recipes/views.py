@@ -24,7 +24,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if is_favorited == '1' and self.request.user.is_authenticated:
             queryset = queryset.filter(favorites__user=self.request.user)
         if is_in_shopping_cart == '1' and self.request.user.is_authenticated:
-            queryset = queryset.filter(shoppingcart_set__user=self.request.user)
+            queryset = queryset.filter(shopping_cart__user=self.request.user)  # Исправлено
         if author_id:
             queryset = queryset.filter(author_id=author_id)
         return queryset
@@ -61,11 +61,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             cart.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['get'], permission_classes=[AllowAny])
+    @action(detail=True, methods=['get'], permission_classes=[AllowAny], url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
         link = request.build_absolute_uri(f'/recipes/{recipe.id}/')
-        return Response({'link': link})
+        return Response({'short-link': link})  # Изменено на short-link
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):

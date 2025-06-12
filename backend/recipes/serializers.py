@@ -1,6 +1,18 @@
 from rest_framework import serializers
 from .models import Recipe, RecipeIngredient, Favorite, ShoppingCart
-from ingredients.serializers import IngredientSerializer
+from ingredients.models import Ingredient
+from users.serializers import UserSerializer
+from utils.serializers import Base64ImageField
+
+
+class IngredientInRecipeWriteSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    amount = serializers.IntegerField(min_value=1)
+
+    def validate_id(self, value):
+        if not Ingredient.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Ингредиент с таким ID не существует.")
+        return value
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -19,23 +31,18 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'cooking_time')
 
 
-class UserShortSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = 'users.User'
-        fields = ('id', 'email', 'username', 'first_name', 'last_name')
-
-
 class RecipeSerializer(serializers.ModelSerializer):
-    author = UserShortSerializer(read_only=True)
-    ingredients = RecipeIngredientSerializer(many=True, source='recipeingredient_set')
+    author = UserSerializer(read_only=True)
+    ingredients = IngredientInRecipeWriteSerializer(many=True, write_only=True)  # Только для записи
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
         fields = (
-            'id', 'name', 'author', 'ingredients', 'text', 'cooking_time',
-            'created_at', 'is_favorited', 'is_in_shopping_cart'
+            'id', 'author', 'ingredients', 'is_favorited', 'is_in_shopping_cart',
+            'name', 'image', 'text', 'cooking_time'
         )
 
     def get_is_favorited(self, obj):
@@ -51,27 +58,42 @@ class RecipeSerializer(serializers.ModelSerializer):
         return ShoppingCart.objects.filter(user=user, recipe=obj).exists()
 
     def create(self, validated_data):
-        ingredients_data = validated_data.pop('recipeingredient_set')
-        recipe = Recipe.objects.create(author=self.context['request'].user, **validated_data)
+        ingredients_data = validated_data.pop('ingredients')
+        image = validated_data.pop('image', None)
+        validated_data.pop('author', None)  # Удаляем author, если он есть
+        recipe = Recipe.objects.create(
+            author=self.context['request'].user,
+            image=image,
+            **validated_data
+        )
         for ingredient_data in ingredients_data:
             RecipeIngredient.objects.create(
                 recipe=recipe,
-                ingredient_id=ingredient_data['ingredient']['id'],
+                ingredient=Ingredient.objects.get(id=ingredient_data['id']),
                 amount=ingredient_data['amount']
             )
         return recipe
 
     def update(self, instance, validated_data):
-        ingredients_data = validated_data.pop('recipeingredient_set')
+        ingredients_data = validated_data.pop('ingredients', None)
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
         instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.image = validated_data.get('image', instance.image)
         instance.save()
-        instance.recipeingredient_set.all().delete()
-        for ingredient_data in ingredients_data:
-            RecipeIngredient.objects.create(
-                recipe=instance,
-                ingredient_id=ingredient_data['ingredient']['id'],
-                amount=ingredient_data['amount']
-            )
+        if ingredients_data:
+            instance.recipe_ingredients.all().delete()
+            for ingredient_data in ingredients_data:
+                RecipeIngredient.objects.create(
+                    recipe=instance,
+                    ingredient=Ingredient.objects.get(id=ingredient_data['id']),
+                    amount=ingredient_data['amount']
+                )
         return instance
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['ingredients'] = RecipeIngredientSerializer(
+            instance.recipe_ingredients.all(), many=True
+        ).data
+        return representation

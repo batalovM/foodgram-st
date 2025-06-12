@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from .models import User, Subscription
-from .serializers import UserSerializer, SubscriptionSerializer, AvatarSerializer
-
+from .serializers import UserSerializer, AvatarSerializer
+from subscriptions.serializers import SubscriptionSerializer
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()

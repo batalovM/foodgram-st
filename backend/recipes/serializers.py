@@ -45,6 +45,31 @@ class RecipeSerializer(serializers.ModelSerializer):
             'name', 'image', 'text', 'cooking_time'
         )
 
+    def validate(self, data):
+        ingredients = data.get('ingredients')
+        cooking_time = data.get('cooking_time')
+
+        # Проверка на пустой список ингредиентов
+        if not ingredients:
+            raise serializers.ValidationError({
+                'ingredients': 'Поле ingredients не может быть пустым.'
+            })
+
+        # Проверка на дублирующиеся id ингредиентов
+        ingredient_ids = [ingredient['id'] for ingredient in ingredients]
+        if len(ingredient_ids) != len(set(ingredient_ids)):
+            raise serializers.ValidationError({
+                'ingredients': 'Ингредиенты не должны повторяться.'
+            })
+
+        # Проверка, что cooking_time >= 1
+        if cooking_time is not None and cooking_time < 1:
+            raise serializers.ValidationError({
+                'cooking_time': 'Время приготовления должно быть не менее 1 минуты.'
+            })
+
+        return data
+
     def get_is_favorited(self, obj):
         user = self.context['request'].user
         if user.is_anonymous:

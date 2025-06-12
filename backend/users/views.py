@@ -45,6 +45,11 @@ class UserViewSet(viewsets.ModelViewSet):
     def avatar(self, request):
         user = request.user
         if request.method == 'PUT':
+            if 'avatar' not in request.data:
+                return Response(
+                    {"avatar": ["This field is required."]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             serializer = AvatarSerializer(user, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()

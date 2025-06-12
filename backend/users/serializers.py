@@ -6,19 +6,15 @@ from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from .models import User, Subscription
 from recipes.serializers import RecipeShortSerializer
-
+from rest_framework.exceptions import AuthenticationFailed
 
 class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
-            # Извлекаем формат и данные Base64
             format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]  # Например, 'png' или 'jpg'
-            # Декодируем Base64
+            ext = format.split('/')[-1]
             decoded_file = base64.b64decode(imgstr)
-            # Генерируем уникальное имя файла
             file_name = f"{uuid.uuid4()}.{ext}"
-            # Создаём ContentFile для сохранения
             data = ContentFile(decoded_file, name=file_name)
         return super().to_internal_value(data)
 
@@ -54,6 +50,11 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name', 'last_name', 'is_subscribed', 'avatar')
+
+    def to_representation(self, instance):
+        if instance.is_anonymous:
+            raise AuthenticationFailed("Authentication credentials were not provided.")
+        return super().to_representation(instance)
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user

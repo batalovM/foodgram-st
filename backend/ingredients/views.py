@@ -11,3 +11,11 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     filter_backends = [SearchFilter]
     search_fields = ['^name']
+    pagination_class = None  # Disable pagination for this viewset
+    
+    def get_queryset(self):
+            queryset = super().get_queryset()
+            name_filter = self.request.query_params.get('name')
+            if name_filter:
+                queryset = queryset.filter(name__istartswith=name_filter)
+            return queryset

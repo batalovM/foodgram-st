@@ -1,34 +1,49 @@
 from rest_framework import serializers
-from users.models import Subscription
+from users.models import User, Subscription
+from recipes.serializers import RecipeShortSerializer  # Исправим импорт
+
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    email = serializers.ReadOnlyField(source='subscriber.email')
-    id = serializers.ReadOnlyField(source='subscriber.id')
-    username = serializers.ReadOnlyField(source='subscriber.username')
-    first_name = serializers.ReadOnlyField(source='subscriber.first_name')
-    last_name = serializers.ReadOnlyField(source='subscriber.last_name')
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()  # Добавим поле avatar
 
     class Meta:
-        model = Subscription
+        model = User
         fields = (
-            'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'recipes', 'recipes_count'
+            'id', 'username', 'first_name', 'last_name', 'email',
+            'is_subscribed', 'recipes', 'recipes_count', 'avatar'
         )
 
     def get_is_subscribed(self, obj):
-        return True
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        return Subscription.objects.filter(user=request.user, subscriber=obj).exists()
 
     def get_recipes(self, obj):
-        from recipes.models import Recipe
-        from recipes.serializers import RecipeShortSerializer  # Lazy import
         request = self.context.get('request')
-        recipes_limit = request.query_params.get('recipes_limit', 3)
-        recipes = Recipe.objects.filter(author=obj.subscriber)[:int(recipes_limit)]
-        serializer = RecipeShortSerializer(recipes, many=True, context={'request': request})
-        return serializer.data
+        recipes = obj.recipes.all()  # Получаем все рецепты пользователя
+        
+        # Применяем лимит, если он указан
+        recipes_limit = request.query_params.get('recipes_limit')
+        if recipes_limit:
+            try:
+                recipes = recipes[:int(recipes_limit)]
+            except (ValueError, TypeError):
+                pass
+        
+        return RecipeShortSerializer(recipes, many=True, context={'request': request}).data
 
     def get_recipes_count(self, obj):
-        return obj.subscriber.recipes.count()
+        return obj.recipes.count()
+    
+    def get_avatar(self, obj):
+        # Если у пользователя есть аватар, возвращаем URL
+        if obj.avatar and hasattr(obj.avatar, 'url'):
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None

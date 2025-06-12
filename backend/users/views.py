@@ -23,7 +23,9 @@ class UserViewSet(viewsets.ModelViewSet):
             subscription, created = Subscription.objects.get_or_create(user=user, subscriber=author)
             if not created:
                 return Response({'error': 'Вы уже подписаны'}, status=status.HTTP_400_BAD_REQUEST)
-            serializer = SubscriptionSerializer(subscription, context={'request': request})
+            
+            # Исправляем эту строку - передаем автора, а не подписку
+            serializer = SubscriptionSerializer(author, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
             subscription = Subscription.objects.filter(user=user, subscriber=author)
@@ -31,14 +33,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'Вы не подписаны'}, status=status.HTTP_400_BAD_REQUEST)
             subscription.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    @csrf_exempt
-    def subscriptions(self, request):
-        subscriptions = Subscription.objects.filter(user=request.user)
-        page = self.paginate_queryset(subscriptions)
-        serializer = SubscriptionSerializer(page, many=True, context={'request': request})
-        return self.get_paginated_response(serializer.data)
 
     @action(detail=False, methods=['put', 'delete'], permission_classes=[IsAuthenticated], url_path='me/avatar')
     @csrf_exempt

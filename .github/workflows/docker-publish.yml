@@ -20,8 +20,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ variables.DOCKER_USERNAME }}
-          password: ${{ variables.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
       
       - name: Build and Push Backend
         uses: docker/build-push-action@v4
@@ -29,5 +29,5 @@ jobs:
           context: ./backend
           push: true
           tags: |
-            ${{ variables.DOCKER_USERNAME }}/foodgram-backend:latest
-            ${{ variables.DOCKER_USERNAME }}/foodgram-backend:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/foodgram-backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/foodgram-backend:${{ github.sha }}

@@ -57,12 +57,12 @@ Nginx будет настроен как прокси-сервер
 
 | Логин      | Пароль     | Роль           |
 |------------|------------|----------------|
-| admin      | admin      | Администратор  |
-| test_user1 | password123 | Пользователь   |
-| test_user2 | password123 | Пользователь   |
-| test_user3 | password123 | Пользователь   |
-| test_user4 | password123 | Пользователь   |
-| test_user5 | password123 | Пользователь   |
+| admin@example.com      | admin      | Администратор  |
+| test1@example.com | password123 | Пользователь   |
+| test2@example.com | password123 | Пользователь   |
+| test3@example.com | password123 | Пользователь   |
+| test4@example.com | password123 | Пользователь   |
+| test5@example.com | password123 | Пользователь   |
 
 Основная функциональность
 Просмотр рецептов

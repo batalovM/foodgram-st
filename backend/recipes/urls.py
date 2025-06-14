@@ -4,8 +4,8 @@ from .views import RecipeViewSet
 
 
 router = DefaultRouter()
-router.register(r'recipes', RecipeViewSet)
+router.register(r"recipes", RecipeViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

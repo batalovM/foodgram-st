@@ -10,12 +10,12 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     permission_classes = [AllowAny]
     filter_backends = [SearchFilter]
-    search_fields = ['^name']
-    pagination_class = None 
-    
+    search_fields = ["^name"]
+    pagination_class = None
+
     def get_queryset(self):
-            queryset = super().get_queryset()
-            name_filter = self.request.query_params.get('name')
-            if name_filter:
-                queryset = queryset.filter(name__istartswith=name_filter)
-            return queryset
+        queryset = super().get_queryset()
+        name_filter = self.request.query_params.get("name")
+        if name_filter:
+            queryset = queryset.filter(name__istartswith=name_filter)
+        return queryset

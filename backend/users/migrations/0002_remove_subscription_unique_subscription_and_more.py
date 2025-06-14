@@ -6,39 +6,46 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0001_initial'),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='subscription',
-            name='unique_subscription',
+            model_name="subscription",
+            name="unique_subscription",
         ),
         migrations.RemoveConstraint(
-            model_name='subscription',
-            name='no_self_subscription',
+            model_name="subscription",
+            name="no_self_subscription",
         ),
         migrations.RenameField(
-            model_name='subscription',
-            old_name='author',
-            new_name='subscriber',
+            model_name="subscription",
+            old_name="author",
+            new_name="subscriber",
         ),
         migrations.AddField(
-            model_name='user',
-            name='description',
-            field=models.TextField(blank=True, verbose_name='О себе'),
+            model_name="user",
+            name="description",
+            field=models.TextField(blank=True, verbose_name="О себе"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='avatar',
-            field=models.ImageField(blank=True, null=True, upload_to='users/avatars/', verbose_name='Аватар'),
+            model_name="user",
+            name="avatar",
+            field=models.ImageField(
+                blank=True, null=True, upload_to="users/avatars/", verbose_name="Аватар"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='subscription',
-            constraint=models.UniqueConstraint(fields=('user', 'subscriber'), name='unique_subscription'),
+            model_name="subscription",
+            constraint=models.UniqueConstraint(
+                fields=("user", "subscriber"), name="unique_subscription"
+            ),
         ),
         migrations.AddConstraint(
-            model_name='subscription',
-            constraint=models.CheckConstraint(check=models.Q(('user_id', models.F('subscriber_id')), _negated=True), name='no_self_subscription'),
+            model_name="subscription",
+            constraint=models.CheckConstraint(
+                check=models.Q(("user_id", models.F("subscriber_id")), _negated=True),
+                name="no_self_subscription",
+            ),
         ),
     ]

@@ -1,3 +1,10 @@
+# Для ревьюера
+Я полностью пересоздал контейнеры и сделал очистку волюма для базы данных, все тесты проходят, я не понимаю, что не так)
+![photo_3_2025-06-16_00-40-29](https://github.com/user-attachments/assets/19945029-96b7-4356-85f0-1ef460cf4f31)
+![photo_2_2025-06-16_00-40-29](https://github.com/user-attachments/assets/4636138b-581b-4295-ae4e-5af2d60ed42c)
+![photo_1_2025-06-16_00-40-29](https://github.com/user-attachments/assets/64a624ea-279a-48d7-ae39-b0f88e149882)
+
+
 # Foodgram - "Продуктовый помощник"
 
 ![Workflow Status](https://github.com/batalovM/foodgram-st/actions/workflows/docker-publish.yml/badge.svg)

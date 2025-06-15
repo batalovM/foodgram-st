@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from .models import User, Subscription
@@ -10,7 +11,15 @@ class CustomUserCreateSerializer(BaseUserCreateSerializer):
         model = User
         fields = ("id", "email", "username", "first_name", "last_name", "password")
         extra_kwargs = {"password": {"write_only": True}}
-
+    
+    def validate_username(self, value):
+            """Валидация поля username по регулярному выражению."""
+            if not re.match(r'^[\w.@+-]+$', value):
+                raise serializers.ValidationError(
+                    'Имя пользователя может содержать только буквы, цифры и символы @/./+/-/_'
+                )
+            return value
+    
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data["username"],
